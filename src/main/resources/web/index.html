@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<!--
+    The MIT License (MIT)
+
+    Copyright (c) 2016 Bilgin Ibryam
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+
+-->
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Live #Twitter Photo Stream</title>
+    <meta name="description" lang="en" content="Camelympics - Live #Twitter Photo Stream"/>
+    <meta name="viewport" content="width=device-width">
+    <link rel="stylesheet" href="css/screen.css" type="text/css" media="screen"/>
+    <link rel="stylesheet" href="css/lightbox.css" type="text/css" media="screen"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <link href='http://fonts.googleapis.com/css?family=Fredoka+One|Open+Sans:400,700' rel='stylesheet' type='text/css'>
+</head>
+<body>
+
+<div id="content">
+    <div id="overview">
+        <h2>Live <span id="Camelympics">#Twitter</span> Photo Stream
+            &nbsp; <a href="https://twitter.com/share" class="twitter-share-button" data-url="http://camelympics.ofbizian.com" data-text="Check out this: live twitter photo stream with #Camel" data-via="bibryam" data-dnt="true">Tweet</a>
+            <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+        </h2>
+    </div>
+    <div class="section" id="pictures">
+    </div>
+    <div id="footer">
+        <div id="disclaimer">
+            Created by <a href="http://twitter.com/bibryam" target="_blank">@bibryam</a> read more <a href="http://www.ofbizian.com/search?q=camelympics" target="_blank">here.</a> Streamed <span id="tweetCount">LOADING</span> tweets with <span id="imageCount">LOADING</span> photos and counting <span id="dotspan"></span>
+        </div>
+    </div>
+</div>
+
+<script src="js/lightbox.js"></script>
+<script type="text/javascript">
+    var span = document.getElementById('dotspan');
+    var defaultCols = 4;
+    var defaultRows = 4;
+    var total = 16;
+
+    var index = 0;
+    $(window).keydown(function (event) {
+        if (event.which == 27) {
+            // the following seems to fix the symptom but only in case the document has the focus
+            // prevents websocket ESC bug
+            event.preventDefault();
+        }
+    });
+
+    $(document).ready(function () {
+        if (!window.WebSocket) {
+            $('#pictures').text("ERROR: Your browser doesn't support websockets!");
+        } else {
+            setupGallery();
+            app.start();
+        }
+    });
+
+    function updateImage(tweet) {
+        var localIndex = 1;
+        if (index >= total) {
+            index = 1;
+        } else {
+            index++;
+            localIndex = index;
+        }
+
+        $('#' + localIndex + ' a').addClass('loading');
+        var imageUrl = tweet.url + ':thumb';
+        var previewUrl = tweet.url + ':large';
+        var image = $('<img />')
+                .load(function () {
+                    $('#' + localIndex).html('<a targeturl="' + tweet.tweetUrl + '" title="@' + htmlEscape(tweet.name) + ':' + htmlEscape(tweet.text) + '" rel="lightbox" href="' + previewUrl + '"><img src="' + imageUrl + '" /></a>');
+                    $('#' + localIndex + ' a').removeClass('loading');
+                })
+                .error(function () {
+                    $('#' + localIndex + ' a').removeClass('loading');
+                    //console.log("error loading " + imageUrl);
+                })
+                .attr('src', imageUrl);
+    }
+
+    function setStats(tweet) {
+        $('#tweetCount').text(tweet.tweetCount);
+        $('#imageCount').text(tweet.imageCount);
+        if ((span.innerHTML += '.').length == 4)
+            span.innerHTML = '';
+    }
+
+    function gallery(data) {
+        var tweet = jQuery.parseJSON(data);
+        setStats(tweet);
+        updateImage(tweet);
+    }
+
+
+    var app = {
+        start:function () {
+//            var location = "ws://localhost:8080/camelympics";
+            var location = "ws://" + window.location.hostname + ":" + window.location.port + "/camelympics";
+            this._ws = new WebSocket(location);
+            this._ws.onmessage = this._onmessage;
+            this._ws.onclose = this._onclose;
+        },
+
+        _onmessage:function (m) {
+            if (m.data) {
+                gallery(m.data);
+            }
+        },
+
+        _onclose:function (m) {
+            this._ws = null;
+            //setTimeout("app.start();", 100);
+        }
+
+    };
+
+    function setupGallery() {
+        var rows = getParameterByName('rows');
+        var cols = getParameterByName('cols');
+        if (cols < 1) {
+            cols = defaultCols
+        }
+        if (rows < 1) {
+            rows = defaultRows
+        }
+        total = rows * cols;
+        var picIndex = 1;
+        var localRows = 1;
+        while(localRows <= rows) {
+            var localCols = 1;
+            $("#pictures").append('<div class="imageRow" id="imageRow_'+localRows+'">');
+            while(localCols <= cols) {
+                $("#imageRow_" + localRows).append('<div id="' + picIndex + '" class="single"><a href="#" ><img  src="images/twitter-dev-logo-150x150.png" alt=""></a></div>');
+                localCols++;
+                picIndex++;
+            }
+            $("#imageRow_" + localRows).append("</div>");
+            localRows++;
+        }
+    }
+
+    function htmlEscape(text) {
+        return $('<div/>').text(text).html();
+    }
+
+    function getParameterByName(name, url) {
+        if (!url) url = window.location.href;
+        name = name.replace(/[\[\]]/g, "\\$&");
+        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+                results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return '';
+        return decodeURIComponent(results[2].replace(/\+/g, " "));
+    }
+
+</script>
+</body>
+</html>
