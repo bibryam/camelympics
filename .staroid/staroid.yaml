@@ -1,0 +1,50 @@
+
+# This file instructs how to build and deploy the project on staroid.com.
+# See https://docs.staroid.com/references/staroid_yaml.html for more details.
+# You can use online validator https://staroid.com/site/validator to validate this yaml.
+apiVersion: beta/v1
+build:
+  skaffold:
+    file: .staroid/skaffold.yaml
+ingress:
+  - serviceName: camelympics
+    port: 8080
+deploy:
+  paramGroups:
+    - name: Configuration
+      collapsed: false
+      params:
+        - name: Search term
+          type: STRING
+          description: "Comma separated terms"
+          defaultValue: "sport,travel"
+          optional: false
+          paths:
+            - ConfigMap:config:data.searchTerm
+    - name: Twitter Access Token
+      collapsed: false
+      params:
+        - name: Consumer API key
+          type: STRING
+          defaultValue: ""
+          optional: false
+          paths:
+            - ConfigMap:config:data.consumerKey
+        - name: Consumer API secret key
+          type: STRING
+          defaultValue: ""
+          optional: false
+          paths:
+            - ConfigMap:config:data.consumerSecret
+        - name: Access token
+          type: STRING
+          defaultValue: ""
+          optional: false
+          paths:
+            - ConfigMap:config:data.accessToken
+        - name: Access token secret
+          type: STRING
+          defaultValue: ""
+          optional: false
+          paths:
+            - ConfigMap:config:data.accessTokenSecret

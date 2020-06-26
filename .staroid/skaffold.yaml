@@ -1,0 +1,19 @@
+# Staroid use skaffold for building container image and deploying k8s resources.
+# See https://skaffold.dev/docs/references/yaml/ for more details.
+#
+# To run locally, configure kubectl (with minikube or with your k8s cluster) and run
+#
+#   skaffold dev -f .staroid/skaffold.yaml --port-forward
+#
+apiVersion: skaffold/v2beta1
+kind: Config
+build:
+  artifacts:
+    - image: camelympics
+      context: .
+      docker:
+        dockerfile: .staroid/Dockerfile
+deploy:
+  kubectl:
+    manifests:
+      - .staroid/k8s-*.yaml

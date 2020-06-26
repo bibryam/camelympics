@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: camelympics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: camelympics
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: camelympics
+    spec:
+      containers:
+        - name: camelympics
+          image: camelympics
+          command:
+            - "bash"
+            - "-c"
+            - >-
+              java
+              -DconsumerKey=$consumerKey
+              -DconsumerSecret=$consumerSecret
+              -DaccessToken=$accessToken
+              -DaccessTokenSecret=$accessTokenSecret
+              -DsearchTerm=$searchTerm
+              -jar camelympics.jar
+          envFrom:
+            - configMapRef:
+                name: config
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1024Mi"
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: camelympics
+spec:
+  ports:
+    - port: 8080
+  selector:
+    app.kubernetes.io/name: camelympics
