@@ -32,7 +32,7 @@
     <link rel="stylesheet" href="css/screen.css" type="text/css" media="screen"/>
     <link rel="stylesheet" href="css/lightbox.css" type="text/css" media="screen"/>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-    <link href='http://fonts.googleapis.com/css?family=Fredoka+One|Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Fredoka+One|Open+Sans:400,700' rel='stylesheet' type='text/css'>
 </head>
 <body>
 
@@ -118,7 +118,9 @@
     var app = {
         start:function () {
 //            var location = "ws://localhost:8080/camelympics";
-            var location = "ws://" + window.location.hostname + ":" + window.location.port + "/camelympics";
+
+            var proto = window.location.protocol == "https:" ? "wss" : "ws"
+            var location = proto + "://" + window.location.hostname + ":" + window.location.port + "/camelympics";
             this._ws = new WebSocket(location);
             this._ws.onmessage = this._onmessage;
             this._ws.onclose = this._onclose;
