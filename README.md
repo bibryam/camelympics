@@ -50,6 +50,10 @@ If you have an *[OpenShift Online dev preview](https://www.openshift.com/devprev
 
     oc expose svc camelympics
 
+### How to run on [Staroid](https://staroid.com/)
+See instructions [here](https://github.com/bibryam/camelympics/pull/2)
+
+
 ### Generating Twitter keys
  - To generate Twitter consumer keys and accessToken, go to *[here](https://dev.twitter.com/apps)*, Create New App, and generate Access Token.
 
