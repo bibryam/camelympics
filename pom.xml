@@ -12,7 +12,7 @@
     <url>http://www.ofbizian.com</url>
 
     <properties>
-        <camel.version>2.17.1</camel.version>
+        <camel.version>3.4.0</camel.version>
         <fabric8.version>3.0.15</fabric8.version>
         <fabric8.version>2.2.132</fabric8.version>
         <docker.port>8080</docker.port>
